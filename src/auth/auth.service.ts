@@ -38,7 +38,7 @@ export class AuthService {
       message: "User registered successfully",
       user: {
         id: user.id,
-        phoneNumber: user.phoneNumber
+        phoneNumber: user.phoneNumber,
       }
     };
   }
