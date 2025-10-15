@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { HashingService } from "../Shared/hashing.service";
 import { PrismaService } from "../Shared/prisma.service";
-import { RegisterDto } from "./dto/register";
+import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 
 @Injectable()

@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { UnprocessableEntityException, ValidationPipe, ValidationError } from '@nestjs/common';
+import { LoggingInterceptor } from './Shared/interceptor/logging.interceptor';
+import { TransformInterceptor } from './Shared/interceptor/transform.interceptor';
 
 function flattenValidationErrors(errors: ValidationError[], parent = ''): { property: string; errors: string[] }[] {
   const out: { property: string; errors: string[] }[] = [];
@@ -30,8 +32,12 @@ async function bootstrap() {
         errors: flattenValidationErrors(errors),
       });
     },
-  }));
+  }
 
-  await app.listen(process.env.PORT ?? 9933);
+));
+
+  app.useGlobalInterceptors(new LoggingInterceptor());
+  app.useGlobalInterceptors(new TransformInterceptor());
+  await app.listen(process.env.PORT ?? 9934);
 }
 bootstrap();
