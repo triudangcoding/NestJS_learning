@@ -22,10 +22,15 @@ export class AuthService {
     
     const hashedPassword = await this.hashingService.hash(body.password);
     
+    // Kiểm tra password và confirmPassword trước khi hash
+    if (body.password !== body.confirmPassword) {
+      throw new HttpException("Password and confirmPassword do not match", HttpStatus.BAD_REQUEST);
+    }
+
     const user = await this.prismaService.user.create({
       data: { 
         phoneNumber: body.phoneNumber,
-        password: hashedPassword 
+        password: hashedPassword,
       }
     });
     
