@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
-import { HashingService } from "../Shared/hashing.service";
-import { PrismaService } from "../Shared/prisma.service";
+import { HashingService } from "../Shared/services/hashing.service";
+import { PrismaService } from "../Shared/services/prisma.service";
 import { RegisterDto } from "./dto/register.dto";
 import { LoginDto } from "./dto/login.dto";
 
@@ -46,6 +46,7 @@ export class AuthService {
     const user = await this.prismaService.user.findFirst({
       where: { phoneNumber: body.phoneNumber }
     });
+    
     if (!user) {
       throw new HttpException("User not found", HttpStatus.BAD_REQUEST);
     }
