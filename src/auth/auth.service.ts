@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
 import { HashingService } from "../Shared/services/hashing.service";
 import { PrismaService } from "../Shared/services/prisma.service";
 import { RegisterDto } from "./dto/register.dto";
@@ -48,11 +48,11 @@ export class AuthService {
     });
     
     if (!user) {
-      throw new HttpException("User not found", HttpStatus.BAD_REQUEST);
+      throw new UnauthorizedException("User not found");
     }
     const isMatch = await this.hashingService.compare(body.password, user.password);
     if (!isMatch) {
-      throw new HttpException("Password is incorrect", HttpStatus.BAD_REQUEST);
+      throw new UnauthorizedException("Password is incorrect");
     }
     return {
       message: "Login successful",
