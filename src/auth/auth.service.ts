@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus, Injectable, UnauthorizedException, UnprocessableEntityException } from "@nestjs/common";
 import { HashingService } from "../Shared/services/hashing.service";
 import { PrismaService } from "../Shared/services/prisma.service";
-import { LoginBodyDTO, RegisterBodyDTO } from "./dto/login-body.dto";
+import { LoginBodyDTO, RefreshTokenBodyDTO, RegisterBodyDTO } from "./dto/login-body.dto";
 import { TokenService } from "src/Shared/services/token.service";
+import { Prisma } from "@prisma/client";
 
 @Injectable()
 export class AuthService {
@@ -82,7 +83,42 @@ export class AuthService {
       this.tokenService.signAccessToken(payload),
       this.tokenService.signRefreshToken(payload)
     ]);
+
+    const decodedRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken);
+    await this.prismaService.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: payload.userId,
+        expiresAt: new Date(decodedRefreshToken.exp * 1000),
+      }
+    });
+    console.log(decodedRefreshToken);
     return { accessToken, refreshToken };
+  }
+
+  async refreshToken(body: RefreshTokenBodyDTO) {
+
+    try {
+      const {userId} = await this.tokenService.verifyRefreshToken(body.refreshToken);
+      await this.prismaService.refreshToken.findUniqueOrThrow({
+        where: {
+          token: body.refreshToken
+        }
+      })
+
+      await this.prismaService.refreshToken.delete({
+        where: {
+          token: body.refreshToken
+        }
+      })
+
+      return this.generateTokens({ userId });
+    } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+    throw new UnauthorizedException('Invalid refresh token');
+  }
   }
 }
 

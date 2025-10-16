@@ -48,3 +48,9 @@ export class LoginResponseDto {
         Object.assign(this, partial);
     }
 }
+
+export class RefreshTokenBodyDTO {
+    @IsNotEmpty()
+    @IsString()
+    refreshToken: string;
+}
