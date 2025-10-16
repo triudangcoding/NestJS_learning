@@ -7,7 +7,7 @@ import { TokenPayload } from '../types/jwt.token';
 export class TokenService {
   constructor(private readonly jwtService: JwtService) {}
 
-  signAccessToken(payload: { userId: number }) {
+  signAccessToken(payload: { userId: string }) {
     const accessExpiresIn = /^\d+$/.test(envConfig.ACCESS_TOKEN_EXPIRES_IN)
       ? Number(envConfig.ACCESS_TOKEN_EXPIRES_IN)
       : (envConfig.ACCESS_TOKEN_EXPIRES_IN as `${number}${'ms'|'s'|'m'|'h'|'d'}`);
@@ -19,7 +19,7 @@ export class TokenService {
     });
   }
 
-  signRefreshToken(payload: { userId: number }) {
+  signRefreshToken(payload: { userId: string }) {
     const refreshExpiresIn = /^\d+$/.test(envConfig.REFRESH_TOKEN_EXPIRES_IN)
       ? Number(envConfig.REFRESH_TOKEN_EXPIRES_IN)
       : (envConfig.REFRESH_TOKEN_EXPIRES_IN as `${number}${'ms'|'s'|'m'|'h'|'d'}`);

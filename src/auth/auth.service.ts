@@ -1,39 +1,41 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, UnauthorizedException, UnprocessableEntityException } from "@nestjs/common";
 import { HashingService } from "../Shared/services/hashing.service";
 import { PrismaService } from "../Shared/services/prisma.service";
-import { RegisterDto } from "./dto/register.dto";
-import { LoginDto } from "./dto/login.dto";
+import { LoginBodyDTO, RegisterBodyDTO } from "./dto/login-body.dto";
+import { TokenService } from "src/Shared/services/token.service";
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly hashingService: HashingService, 
-    private readonly prismaService: PrismaService
-  ) {}
+    private readonly hashingService: HashingService,
+    private readonly prismaService: PrismaService,
+    private readonly tokenService: TokenService,
+  ) { }
 
-  async register(body: RegisterDto) {
+  async register(body: RegisterBodyDTO) {
     const existingUser = await this.prismaService.user.findFirst({
-      where: { phoneNumber: body.phoneNumber }
+      where: { phoneNumber: body.phoneNumber  }
     });
-    
+
     if (existingUser) {
       throw new HttpException("User already exists", HttpStatus.BAD_REQUEST);
     }
-    
+
     const hashedPassword = await this.hashingService.hash(body.password);
-    
+
     // Kiểm tra password và confirmPassword trước khi hash
     if (body.password !== body.confirmPassword) {
       throw new HttpException("Password and confirmPassword do not match", HttpStatus.BAD_REQUEST);
     }
 
     const user = await this.prismaService.user.create({
-      data: { 
+      data: {
         phoneNumber: body.phoneNumber,
         password: hashedPassword,
+        fullName: body.name
       }
     });
-    
+
     return {
       message: "User registered successfully",
       user: {
@@ -42,7 +44,9 @@ export class AuthService {
       }
     };
   }
-  async login(body: LoginDto) {
+
+  async login(body: LoginBodyDTO) {
+    
     const user = await this.prismaService.user.findFirst({
       where: { phoneNumber: body.phoneNumber }
     });
@@ -52,15 +56,33 @@ export class AuthService {
     }
     const isMatch = await this.hashingService.compare(body.password, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException("Password is incorrect");
+      throw new UnprocessableEntityException([
+        {
+          property: "password",
+          errors: ["Password is incorrect"]
+        }
+      ]);
     }
+
+    const tokens = await this.generateTokens({ userId: user.id });
     return {
-      message: "Login successful",
       user: {
         id: user.id,
+        name: user.fullName,
         phoneNumber: user.phoneNumber
-      }
+      },
+      tokens
     };
+  }
+
+ 
+
+  async generateTokens(payload: { userId: string }) {
+    const [accessToken, refreshToken] = await Promise.all([
+      this.tokenService.signAccessToken(payload),
+      this.tokenService.signRefreshToken(payload)
+    ]);
+    return { accessToken, refreshToken };
   }
 }
 
