@@ -3,7 +3,8 @@ import { HashingService } from "../Shared/services/hashing.service";
 import { PrismaService } from "../Shared/services/prisma.service";
 import { LoginBodyDTO, RefreshTokenBodyDTO, RegisterBodyDTO } from "./dto/login-body.dto";
 import { TokenService } from "src/Shared/services/token.service";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";  
+import { isUniqueConstraintError } from "src/Shared/types/helper";
 
 @Injectable()
 export class AuthService {
@@ -112,7 +113,7 @@ export class AuthService {
 
       return this.generateTokens({ userId });
     } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
+    if (isUniqueConstraintError(error)) {
       throw new UnauthorizedException('Invalid refresh token');
     }
     throw new UnauthorizedException('Invalid refresh token');
