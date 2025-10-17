@@ -1,9 +1,9 @@
-import { IsNotEmpty, IsOptional, IsString, Matches } from "class-validator";
+import { IsNotEmpty, IsOptional, IsString } from "class-validator";
+import { Matches } from "src/Shared/decorators/custom-validator.decorator";
 
 export class LoginBodyDTO {
     @IsNotEmpty()
     @IsString()
-    @Matches(/^[0-9]{9,15}$/, { message: "phoneNumber must be digits (9-15)" })
     phoneNumber: string;
 
     @IsNotEmpty()
@@ -27,15 +27,13 @@ export class LoginBodyDTO {
 export class RegisterBodyDTO extends LoginBodyDTO {
     @IsString({ message: 'Tên phải là chuỗi' })
     name: string;
-
-    // Bắt buộc confirmPassword khi đăng ký
     @IsNotEmpty()
     @IsString()
+    @Matches("password")
     declare confirmPassword: string;
 }
 
 export class LoginResponseDto {
-    message: string;
     tokens: {
         accessToken: string;
         refreshToken: string;

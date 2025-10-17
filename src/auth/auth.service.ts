@@ -72,7 +72,6 @@ export class AuthService {
         name: user.fullName,
         phoneNumber: user.phoneNumber
       },
-      tokens
     };
   }
 
@@ -92,7 +91,6 @@ export class AuthService {
         expiresAt: new Date(decodedRefreshToken.exp * 1000),
       }
     });
-    console.log(decodedRefreshToken);
     return { accessToken, refreshToken };
   }
 
