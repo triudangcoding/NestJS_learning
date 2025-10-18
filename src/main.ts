@@ -3,6 +3,7 @@ import { AppModule } from './app.module';
 import { UnprocessableEntityException, ValidationPipe, ValidationError } from '@nestjs/common';
 import { LoggingInterceptor } from './Shared/interceptor/logging.interceptor';
 import { TransformInterceptor } from './Shared/interceptor/transform.interceptor';
+import * as cookieParser from 'cookie-parser';
 
 function flattenValidationErrors(errors: ValidationError[], parent = ''): { property: string; errors: string[] }[] {
   const out: { property: string; errors: string[] }[] = [];
@@ -34,10 +35,14 @@ async function bootstrap() {
     },
   }
 
-));
+
+  ));
 
   app.useGlobalInterceptors(new LoggingInterceptor());
   app.useGlobalInterceptors(new TransformInterceptor());
+  app.use(cookieParser());
+
+
   await app.listen(process.env.PORT ?? 9934);
 }
 bootstrap();

@@ -75,6 +75,7 @@ export class AuthService {
 
     const tokens = await this.generateTokens({ userId: user.id });
     return {
+      tokens,
       user: {
         id: user.id,
         name: user.fullName,
@@ -93,6 +94,7 @@ export class AuthService {
 
     const decodedRefreshToken = await this.tokenService.verifyRefreshToken(refreshToken);
     await this.prismaService.refreshToken.create({
+
       data: {
         token: refreshToken,
         userId: payload.userId,
