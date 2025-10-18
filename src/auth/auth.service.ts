@@ -4,7 +4,7 @@ import { PrismaService } from "../Shared/services/prisma.service";
 import { LoginBodyDTO, RefreshTokenBodyDTO, RegisterBodyDTO } from "./dto/login-body.dto";
 import { TokenService } from "src/Shared/services/token.service";
 import { Prisma } from "@prisma/client";  
-import { isUniqueConstraintError } from "src/Shared/types/helper";
+import { isNotFoundError, isUniqueConstraintError } from "src/Shared/types/helper";
 
 @Injectable()
 export class AuthService {
@@ -15,36 +15,43 @@ export class AuthService {
   ) { }
 
   async register(body: RegisterBodyDTO) {
-    const existingUser = await this.prismaService.user.findFirst({
-      where: { phoneNumber: body.phoneNumber  }
-    });
-
-    if (existingUser) {
-      throw new HttpException("User already exists", HttpStatus.BAD_REQUEST);
-    }
-
-    const hashedPassword = await this.hashingService.hash(body.password);
-
-    // Kiểm tra password và confirmPassword trước khi hash
-    if (body.password !== body.confirmPassword) {
-      throw new HttpException("Password and confirmPassword do not match", HttpStatus.BAD_REQUEST);
-    }
-
-    const user = await this.prismaService.user.create({
-      data: {
-        phoneNumber: body.phoneNumber,
-        password: hashedPassword,
-        fullName: body.name
+    try {
+      const existingUser = await this.prismaService.user.findFirst({
+        where: { phoneNumber: body.phoneNumber  }
+      });
+  
+      if (existingUser) {
+        throw new HttpException("User already exists", HttpStatus.BAD_REQUEST);
       }
-    });
-
-    return {
-      message: "User registered successfully",
-      user: {
-        id: user.id,
-        phoneNumber: user.phoneNumber,
+  
+      const hashedPassword = await this.hashingService.hash(body.password);
+  
+      // Kiểm tra password và confirmPassword trước khi hash
+      if (body.password !== body.confirmPassword) {
+        throw new HttpException("Password and confirmPassword do not match", HttpStatus.BAD_REQUEST);
       }
-    };
+  
+      const user = await this.prismaService.user.create({
+        data: {
+          phoneNumber: body.phoneNumber,
+          password: hashedPassword,
+          fullName: body.name
+        }
+      });
+  
+      return {
+        message: "User registered successfully",
+        user: {
+          id: user.id,
+          phoneNumber: user.phoneNumber,
+        }
+      };
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        throw new HttpException("User already exists", HttpStatus.BAD_REQUEST);
+      }
+      throw new HttpException("Internal server error", HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async login(body: LoginBodyDTO) {
@@ -113,7 +120,7 @@ export class AuthService {
 
       return this.generateTokens({ userId });
     } catch (error) {
-    if (isUniqueConstraintError(error)) {
+    if (isNotFoundError(error)) {
       throw new UnauthorizedException('Invalid refresh token');
     }
     throw new UnauthorizedException('Invalid refresh token');
