@@ -18,7 +18,6 @@ export class AuthController {
     return new LoginResponseDto( await this.authService.login(body));
   }
 
-  @UseGuards(AccessTokenGuard)
   @Post("refresh-token")
   @HttpCode(HttpStatus.OK)
   async refreshToken(@Body() body: RefreshTokenBodyDTO) {

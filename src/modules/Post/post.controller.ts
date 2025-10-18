@@ -1,0 +1,25 @@
+import { Body, Controller, Post, UseGuards, Req, Get } from "@nestjs/common";
+import { ApiKeyGuard } from "src/Shared/guard/api-key.guard";
+import { PostService } from "./post.service";
+import { CreatePostDto } from "./DTO/create-post-dto";
+import { AccessTokenGuard } from "src/Shared/guard/access-token.guard";
+import { REQUEST_USER_KEY } from "src/Shared/constants/auth-constant";
+
+@Controller("post")
+export class PostController {
+    constructor(private readonly postService: PostService) {}
+
+    @Post("create-post")
+    @UseGuards(AccessTokenGuard, ApiKeyGuard)
+    async createPost(@Body() body: CreatePostDto, @Req() request: any) {
+        const userId = request[REQUEST_USER_KEY].userId;
+        return this.postService.createPost(body, userId);
+    }
+
+    @Get("get")
+    @UseGuards(AccessTokenGuard, ApiKeyGuard)
+    async getPosts(@Req() request: any) {
+        const userId = request[REQUEST_USER_KEY].userId;
+        return this.postService.getPosts(userId);
+    }
+}
