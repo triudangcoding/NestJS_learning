@@ -13,3 +13,9 @@ export class CreatePostDto {
     @IsString()
     userId?: string; // Optional vì sẽ lấy từ token
 }
+
+export class UpdatePostDto extends CreatePostDto {
+    @IsString()
+    @IsNotEmpty()
+    id: string;
+}
