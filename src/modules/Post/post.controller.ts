@@ -3,7 +3,8 @@ import { ApiKeyGuard } from "src/Shared/guard/api-key.guard";
 import { PostService } from "./post.service";
 import { CreatePostDto, UpdatePostDto } from "./DTO/create-post-dto";
 import { AccessTokenGuard } from "src/Shared/guard/access-token.guard";
-import { REQUEST_USER_KEY } from "src/Shared/constants/auth-constant";
+import { AuthType, ConditionGuard, REQUEST_USER_KEY } from "src/Shared/constants/auth-constant";
+import { Auth } from "src/Shared/decorators/auth.decorator";
 
 @Controller("post")
 export class PostController {
@@ -16,8 +17,8 @@ export class PostController {
         return this.postService.createPost(body, userId);
     }
 
+    @Auth([AuthType.BEARER, AuthType.API_KEY], ConditionGuard.AND)
     @Get("get")
-    @UseGuards(AccessTokenGuard, ApiKeyGuard)
     async getPosts(@Req() request: any) {
         const userId = request[REQUEST_USER_KEY].userId;
         return this.postService.getPosts(userId);
