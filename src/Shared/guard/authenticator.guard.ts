@@ -21,7 +21,6 @@ export class AuthenticatorGuard implements CanActivate {
             context.getClass(),
         ]);
         
-        // Nếu không có auth requirement, cho phép truy cập
         if (!authTypeValue) {
             return true;
         }

@@ -4,9 +4,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { HashingService } from './services/hashing.service';
 import { PrismaService } from './services/prisma.service';
 import { TokenService } from './services/token.service';
+import { AuthenticatorGuard } from './guard/authenticator.guard';
 import { envConfig } from 'src/configs/env.config';
 
-const SharedServices = [HashingService, PrismaService, TokenService];
+const SharedServices = [HashingService, PrismaService, TokenService, AuthenticatorGuard];
 
 @Global()
 @Module({
