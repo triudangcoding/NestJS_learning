@@ -10,7 +10,6 @@ export type AuthType = (typeof AuthType)[keyof typeof AuthType];
 
 export const ConditionGuard = {
    AND: 'AND',
-   OR: 'OR',
 } as const;
 
 export type ConditionGuardType = (typeof ConditionGuard)[keyof typeof ConditionGuard];

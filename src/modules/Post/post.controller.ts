@@ -9,18 +9,18 @@ import { AuthenticatorGuard } from "src/Shared/guard/authenticator.guard";
 
 @Controller("post")
 export class PostController {
-    constructor(private readonly postService: PostService) {}
+    constructor(private readonly postService: PostService) { }
 
     @Post("create-post")
-    @UseGuards(AccessTokenGuard, ApiKeyGuard)
+    @Auth([AuthType.BEARER, AuthType.API_KEY], ConditionGuard.AND)
+    @UseGuards(AuthenticatorGuard)
     async createPost(@Body() body: CreatePostDto, @Req() request: any) {
         const userId = request[REQUEST_USER_KEY].userId;
         return this.postService.createPost(body, userId);
     }
-
     @Auth([AuthType.BEARER, AuthType.API_KEY], ConditionGuard.AND)
+    @UseGuards(AuthenticatorGuard)
     @Get("get")
-    @UseGuards(AccessTokenGuard, ApiKeyGuard)
     async getPosts(@Req() request: any) {
         const userId = request[REQUEST_USER_KEY].userId;
         return this.postService.getPosts(userId);
