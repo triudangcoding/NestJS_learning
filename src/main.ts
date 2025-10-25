@@ -3,6 +3,8 @@ import { AppModule } from './app.module';
 import { UnprocessableEntityException, ValidationPipe, ValidationError } from '@nestjs/common';
 import { LoggingInterceptor } from './Shared/interceptor/logging.interceptor';
 import { TransformInterceptor } from './Shared/interceptor/transform.interceptor';
+import { getAvailablePort } from './Shared/utils/port-checker.util';
+import { envConfig } from './configs/env.config';
 import * as cookieParser from 'cookie-parser';
 
 function flattenValidationErrors(errors: ValidationError[], parent = ''): { property: string; errors: string[] }[] {
@@ -20,7 +22,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({
     transform: true,
-    whitelist: true,
+    whitelist: true,  
     forbidNonWhitelisted: true,
     forbidUnknownValues: true,
     stopAtFirstError: false,
@@ -42,7 +44,21 @@ async function bootstrap() {
   app.useGlobalInterceptors(new TransformInterceptor());
   app.use(cookieParser());
 
-
-  await app.listen(process.env.PORT ?? 9934);
+  // Lấy port từ cấu hình
+  const preferredPort = envConfig.PORT;
+  const fallbackRange = envConfig.PORT_FALLBACK_RANGE;
+  
+  try {
+    // Tìm port sẵn sàng
+    const availablePort = await getAvailablePort(preferredPort, fallbackRange);
+    
+    console.log(`🚀 Server đang khởi động trên port ${availablePort}`);
+    await app.listen(availablePort);
+    
+    console.log(`✅ Server đã sẵn sàng tại http://localhost:${availablePort}`);
+  } catch (error) {
+    console.error('❌ Không thể khởi động server:', error.message);
+    process.exit(1);
+  }
 }
 bootstrap();

@@ -10,6 +10,10 @@ class ConfigSchema {
   @IsOptional()
   PORT: number;
 
+  @IsNumber()
+  @IsOptional()
+  PORT_FALLBACK_RANGE: number;
+
   @IsString()
   ACCESS_TOKEN_SECRET: string;
 
@@ -33,6 +37,7 @@ class ConfigSchema {
 const configServer = plainToInstance(ConfigSchema, {
   DATABASE_URL: process.env.DATABASE_URL,
   PORT: parseInt(process.env.PORT ?? '9934', 10),
+  PORT_FALLBACK_RANGE: parseInt(process.env.PORT_FALLBACK_RANGE ?? '100', 10),
   ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRES_IN: process.env.ACCESS_TOKEN_EXPIRES_IN,
   REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
@@ -57,6 +62,7 @@ if (errorsArray.length > 0) {
 export const envConfig = {
   DATABASE_URL: configServer.DATABASE_URL,
   PORT: configServer.PORT,
+  PORT_FALLBACK_RANGE: configServer.PORT_FALLBACK_RANGE,
   ACCESS_TOKEN_SECRET: configServer.ACCESS_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRES_IN: configServer.ACCESS_TOKEN_EXPIRES_IN ?? '1h',
   REFRESH_TOKEN_SECRET: configServer.REFRESH_TOKEN_SECRET,
