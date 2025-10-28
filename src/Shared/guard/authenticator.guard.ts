@@ -37,7 +37,7 @@ export class AuthenticatorGuard implements CanActivate {
                 authtype.map(authType => this.checkAuthType(authType, request))
             );
             
-            // Tất cả phải thành công
+            // Tất cả -> thành công -> trả về true
             const allValid = results.every(result => result === true);
             if (!allValid) {
                 throw new UnauthorizedException('Authentication failed - all auth types required');
